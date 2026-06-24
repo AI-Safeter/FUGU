@@ -6,10 +6,15 @@ dimension. This is the black-box optimizer that
 [TRINITY](https://arxiv.org/abs/2512.04695) uses to evolve its LLM-coordinator
 router head.
 
-TRINITY and its sibling Conductor are the research behind Sakana AI's FUGU,
-their multi-LLM orchestration system. FUGU routes each query across a pool of
-LLMs, assigning roles and picking which model answers; that routing decision is
-what this optimizer trains. This repo implements TRINITY's side of FUGU.
+TRINITY ([2512.04695](https://arxiv.org/abs/2512.04695)) and its sibling
+Conductor ([2512.04388](https://arxiv.org/abs/2512.04388)) are the research
+behind [Sakana AI's FUGU](https://sakana.ai/fugu/), the multi-LLM orchestration
+service Sakana launched in June 2026 ([release post](https://sakana.ai/fugu-release/)).
+FUGU is itself a model: it exposes one OpenAI-compatible endpoint and, behind it,
+routes each query across a swappable pool of frontier LLMs (and instances of
+itself), handling model selection, role delegation, verification, and synthesis.
+That routing decision is what this optimizer trains. This repo implements
+TRINITY's side of FUGU.
 
 No LLM is required to use this code. The optimizer is a general-purpose
 gradient-free minimizer, and the router head takes a feature vector as input.
@@ -159,5 +164,6 @@ remedy, independent restarts, rather than asserting a single run solves it.
 
 - Ros, R., & Hansen, N. (2008). *A Simple Modification in CMA-ES Achieving Linear Time and Space Complexity.* PPSN X.
 - Hansen, N. (2016). *The CMA Evolution Strategy: A Tutorial.* arXiv:1604.00772.
-- Xu, J. et al. (2026). *TRINITY: An Evolved LLM Coordinator.* ICLR 2026. arXiv:2512.04695.
-- Nielsen, S. et al. (2026). *Learning to Orchestrate Agents in Natural Language with the Conductor.* ICLR 2026. arXiv:2512.04388.
+- Xu, J. et al. (2026). *TRINITY: An Evolved LLM Coordinator.* ICLR 2026. [arXiv:2512.04695](https://arxiv.org/abs/2512.04695).
+- Nielsen, S. et al. (2026). *Learning to Orchestrate Agents in Natural Language with the Conductor.* ICLR 2026. [arXiv:2512.04388](https://arxiv.org/abs/2512.04388).
+- Sakana AI (2026). *Sakana Fugu: One Model to Command Them All.* Service: [sakana.ai/fugu](https://sakana.ai/fugu/); release: [sakana.ai/fugu-release](https://sakana.ai/fugu-release/).

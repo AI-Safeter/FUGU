@@ -1,4 +1,4 @@
-"""Sep-CMA-ES — separable Covariance Matrix Adaptation Evolution Strategy.
+"""Sep-CMA-ES: separable Covariance Matrix Adaptation Evolution Strategy.
 
 A diagonal-covariance variant of CMA-ES with **linear** time and space
 complexity in the search-space dimension ``n``. Full CMA-ES stores and
@@ -166,7 +166,7 @@ class SepCMAES:
         self._c1 = c1
         self._c_mu = c_mu
 
-        # E||N(0,I)|| — expected length of a standard normal vector.
+        # E||N(0,I)||: expected length of a standard normal vector.
         self._chi_n = math.sqrt(n) * (1 - 1 / (4 * n) + 1 / (21 * n**2))
 
         # ----- dynamic state ----- #
@@ -245,8 +245,8 @@ class SepCMAES:
     def ask(self) -> np.ndarray:
         """Sample and return a ``(lambda, n)`` array of candidate solutions.
 
-        Each candidate is ``x = m + sigma * D * z`` with ``z ~ N(0, I)`` — the
-        per-coordinate scaling by ``D = sqrt(C)`` is the whole separable model.
+        Each candidate is ``x = m + sigma * D * z`` with ``z ~ N(0, I)``. The
+        per-coordinate scaling by ``D = sqrt(C)`` is the separable model.
         """
         return np.stack([self._sample_one() for _ in range(self._lambda)])
 

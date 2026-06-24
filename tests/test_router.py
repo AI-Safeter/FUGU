@@ -91,9 +91,9 @@ def test_sampling_is_stochastic_and_differs_from_greedy():
 
 
 # --------------------------------------------------------------------------- #
-# The whole point: Sep-CMA-ES can *evolve* the router head end-to-end, with no
-# LLM and no gradients — exactly TRINITY's training loop, but against a
-# synthetic oracle objective so it runs in milliseconds.
+# The point of the package: Sep-CMA-ES can evolve the router head end-to-end,
+# with no LLM and no gradients. Same shape as TRINITY's training loop, but
+# against a synthetic oracle objective so it runs in milliseconds.
 # --------------------------------------------------------------------------- #
 def test_sepcmaes_evolves_router_to_match_an_oracle():
     rng = np.random.default_rng(0)

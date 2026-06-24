@@ -1,37 +1,42 @@
-# Sep-CMA-ES — the router optimizer from TRINITY
+# Sep-CMA-ES: the router optimizer from TRINITY
 
-A clean NumPy implementation of **separable CMA-ES** (Ros & Hansen, 2008): a
-diagonal-covariance evolution strategy with **linear** time and space in the
-search dimension. This is the black-box optimizer that
+A NumPy implementation of separable CMA-ES (Ros & Hansen, 2008): a
+diagonal-covariance evolution strategy with linear time and space in the search
+dimension. This is the black-box optimizer that
 [TRINITY](https://arxiv.org/abs/2512.04695) uses to evolve its LLM-coordinator
-**router head**.
+router head.
+
+TRINITY and its sibling Conductor are the research behind Sakana AI's FUGU,
+their multi-LLM orchestration system. FUGU routes each query across a pool of
+LLMs, assigning roles and picking which model answers; that routing decision is
+what this optimizer trains. This repo implements TRINITY's side of FUGU.
 
 No LLM is required to use this code. The optimizer is a general-purpose
-gradient-free minimizer; the router head takes a feature vector as input.
+gradient-free minimizer, and the router head takes a feature vector as input.
 
 ## Why separable CMA-ES?
 
-Full CMA-ES adapts a dense `n × n` covariance matrix — `O(n²)` memory and an
+Full CMA-ES adapts a dense `n × n` covariance matrix: `O(n²)` memory and an
 `O(n³)` eigendecomposition per update. That is hopeless once `n` is in the
-thousands. Sep-CMA-ES restricts the covariance to its **diagonal**, so every
+thousands. Sep-CMA-ES restricts the covariance to its diagonal, so every
 quantity is a length-`n` vector and a generation costs `O(λ·n)`. Ros & Hansen
-showed this not only scales but *learns faster* on separable landscapes, by
+showed this not only scales but learns faster on separable landscapes, by
 accelerating the covariance learning rate by a factor of `(n+2)/3`.
 
 TRINITY's coordinator head has ~10⁴ parameters and a loss landscape that is
-near block/axis-separable (their Definition 1), which is precisely the regime
-where the diagonal model loses almost nothing while saving the `O(n²)` cost.
+near block/axis-separable (their Definition 1), the regime where the diagonal
+model loses almost nothing while saving the `O(n²)` cost.
 
 ## The two papers
 
-Both are Sakana AI, ICLR 2026 — two routes to the same goal (orchestrate a pool
-of LLMs), at opposite ends of the design space:
+Both are Sakana AI papers (ICLR 2026), two routes to the same goal of
+orchestrating a pool of LLMs, at opposite ends of the design space:
 
-| | **TRINITY** ([2512.04695](https://arxiv.org/abs/2512.04695)) | **Conductor** ([2512.04388](https://arxiv.org/abs/2512.04388)) |
+| | TRINITY ([2512.04695](https://arxiv.org/abs/2512.04695)) | Conductor ([2512.04388](https://arxiv.org/abs/2512.04388)) |
 |---|---|---|
 | Controller | frozen 0.6B SLM + ~10K-param head | full 7B LLM, generative |
 | Action | one `(agent, role)` per turn, fixed set | free-form NL plan (≤5 steps) per call |
-| Optimizer | **Sep-CMA-ES** (this repo) | GRPO (RL) |
+| Optimizer | Sep-CMA-ES (this repo) | GRPO (RL) |
 | Objective | `J(θ)=E_τ[R(τ)]`, binary terminal reward | shaped reward (format gate + correctness) |
 
 This repo implements TRINITY's side: the Sep-CMA-ES optimizer and the linear
@@ -39,7 +44,7 @@ router head it evolves.
 
 ## The router head
 
-`TrinityRouterHead` is a single **bias-free linear layer** `W: ℝ^d → ℝ^{L+3}`:
+`TrinityRouterHead` is a single bias-free linear layer `W: ℝ^d → ℝ^{L+3}`:
 
 ```
 logits = W · h            # h = penultimate-token hidden state of the SLM (d=1024)
@@ -47,10 +52,10 @@ agent  = argmax(logits[:L])        # which of L worker LLMs
 role   = argmax(logits[L:])        # Thinker | Worker | Verifier
 ```
 
-For `L=7, d=1024` that is exactly `10·1024 = 10,240` parameters (paper Table 6).
-The flattened `W` is the vector `θ` that Sep-CMA-ES optimizes. The hidden state
-`h` is an *input* — in the full system it comes from a frozen Qwen3-0.6B; here
-you supply it, which is what keeps the optimizer testable without a model.
+For `L=7, d=1024` that is `10·1024 = 10,240` parameters (paper Table 6). The
+flattened `W` is the vector `θ` that Sep-CMA-ES optimizes. The hidden state `h`
+is an input. In the full system it comes from a frozen Qwen3-0.6B; here you
+supply it, which keeps the optimizer testable without a model.
 
 ## Install
 
@@ -109,21 +114,21 @@ def fitness(theta):
 opt.tell(xs, [-fitness(x) for x in xs])     # negate: we minimize
 ```
 
-Everything else — sampling, recombination, step-size and covariance adaptation —
-is exactly what this repo already does.
+Sampling, recombination, step-size and covariance adaptation are already done
+by this repo.
 
 ## Faithfulness notes
 
 The TRINITY paper specifies only the sampling model `y = m + σ·D·z`, the
 population size `λ = ⌈4 + 3 ln n⌉`, and `m_CMA = 16`; it cites Ros & Hansen
-(2008) for the rest. The update equations and strategy constants here therefore
-follow **Hansen (2016) tutorial defaults** plus the **Ros & Hansen (2008)
-`(n+2)/3` acceleration**, applied to the full covariance learning rate (both the
-rank-one `c1` and rank-μ `cμ` terms), matching the 2008 paper's combined
-`c_cov`. The widely-used `cmaes` library applies the factor only to `cμ`; the
-two are empirically equivalent on separable problems (see the cross-validation
-test). Default `λ = 4 + ⌊3 ln n⌋` (standard convention); TRINITY's `⌈4+3 ln n⌉`
-rounding differs by at most one individual.
+(2008) for the rest. The update equations and strategy constants here follow
+Hansen's 2016 tutorial defaults plus the Ros & Hansen (2008) `(n+2)/3`
+acceleration, applied to the full covariance learning rate (both the rank-one
+`c1` and rank-μ `cμ` terms), matching the 2008 paper's combined `c_cov`. The
+`cmaes` library applies the factor only to `cμ`; the two are empirically
+equivalent on separable problems (see the cross-validation test). The default
+`λ = 4 + ⌊3 ln n⌋` is the standard convention; TRINITY's `⌈4+3 ln n⌉` rounding
+differs by at most one individual.
 
 ## Tests
 
@@ -132,8 +137,8 @@ pytest -q          # 42 tests
 ```
 
 Coverage: interface invariants, determinism, convergence on sphere and the
-ill-conditioned **separable ellipsoid** (the home turf), the diagonal adapting
-to per-coordinate curvature, the `minimize`/`maximize` wrapper (including
+ill-conditioned separable ellipsoid (the home turf), the diagonal adapting to
+per-coordinate curvature, the `minimize`/`maximize` wrapper (including
 sign-reporting and a hard `max_evals` ceiling), step-size shrinkage, stop
 conditions, box-constraint handling, construction/`tell` error paths, graceful
 divergence on pathological steps, the router head contract, an end-to-end
@@ -141,14 +146,14 @@ divergence on pathological steps, the router head contract, an end-to-end
 against the reference `cmaes` library on separable landscapes (skipped if it is
 not installed).
 
-The implementation was additionally put through an adversarial multi-agent
-review (algorithm-vs-Ros&Hansen, numerical robustness, router faithfulness, test
-quality); it found **no mathematical or router errors**, and the robustness and
+The implementation was also put through an adversarial multi-agent review
+(algorithm-vs-Ros&Hansen, numerical robustness, router faithfulness, test
+quality). It found no mathematical or router errors, and the robustness and
 coverage findings it confirmed were fixed test-first.
 
-Note on Rosenbrock: it is *non*-separable with a local optimum for `n ≥ 4`, so a
+Note on Rosenbrock: it is non-separable with a local optimum for `n ≥ 4`, so a
 diagonal model can stall there in a single run. The test reflects the standard
-remedy — independent restarts — rather than asserting a single run solves it.
+remedy, independent restarts, rather than asserting a single run solves it.
 
 ## References
 

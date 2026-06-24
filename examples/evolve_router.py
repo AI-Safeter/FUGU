@@ -1,4 +1,4 @@
-"""Evolve TRINITY's router head with Sep-CMA-ES — no LLM, no gradients.
+"""Evolve TRINITY's router head with Sep-CMA-ES: no LLM, no gradients.
 
 This mirrors TRINITY's training loop end-to-end, but swaps the (expensive,
 non-differentiable) "run the multi-LLM coordinator and score the task" fitness

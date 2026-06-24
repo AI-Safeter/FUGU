@@ -1,4 +1,4 @@
-"""TRINITY's evolved coordinator head — "the router" optimized by Sep-CMA-ES.
+"""TRINITY's evolved coordinator head: "the router" optimized by Sep-CMA-ES.
 
 The router is a single **bias-free linear layer** that turns a coordinator
 SLM's penultimate-token hidden state ``h in R^d`` into a routing decision:
@@ -113,8 +113,8 @@ class TrinityRouterHead:
     ) -> Tuple[int, Role]:
         """Pick ``(agent_id, role)`` for the current state ``h``.
 
-        ``sample=False`` (default) decodes greedily via argmax — TRINITY's
-        deterministic deployment. ``sample=True`` draws from the softmax policy
+        ``sample=False`` (default) decodes greedily via argmax, which is
+        TRINITY's deployment-time behavior. ``sample=True`` draws from the softmax policy
         (used to estimate the stochastic objective J(theta) = E[R(tau)]).
         """
         p_agent, p_role = self.policy(h)

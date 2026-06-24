@@ -1,5 +1,9 @@
 # Sep-CMA-ES: the router optimizer from TRINITY
 
+[![arXiv: TRINITY](https://img.shields.io/badge/arXiv-2512.04695-b31b1b)](https://arxiv.org/abs/2512.04695)
+[![arXiv: Conductor](https://img.shields.io/badge/arXiv-2512.04388-b31b1b)](https://arxiv.org/abs/2512.04388)
+[![Sakana Fugu](https://img.shields.io/badge/Sakana-Fugu-7c3aed)](https://sakana.ai/fugu/)
+
 A NumPy implementation of separable CMA-ES (Ros & Hansen, 2008): a
 diagonal-covariance evolution strategy with linear time and space in the search
 dimension. This is the black-box optimizer that

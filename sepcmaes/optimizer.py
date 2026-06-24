@@ -291,7 +291,9 @@ class SepCMAES:
 
         # Rank by fitness; keep the mu best. y = (x - m) / sigma is the step in
         # search space measured in units of sigma.
-        order = np.argsort(f)
+        # stable sort so tie-breaking is deterministic and matches the torch
+        # backend (numpy's default 'quicksort' is unstable).
+        order = np.argsort(f, kind="stable")
         x_best = X[order[: self._mu]]
         y = (x_best - self._mean) / self._sigma  # (mu, n)
         y_w = self._weights @ y  # (n,) recombined step

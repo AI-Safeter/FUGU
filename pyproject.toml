@@ -11,7 +11,8 @@ requires-python = ">=3.9"
 dependencies = ["numpy>=1.21"]
 
 [project.optional-dependencies]
-test = ["pytest>=7", "cmaes>=0.10"]   # cmaes is only used for cross-validation
+torch = ["torch>=2.0"]                # optional PyTorch backend (sepcmaes.torch_backend)
+test = ["pytest>=7", "cmaes>=0.10"]   # cmaes is only used for cross-validation; torch tests skip if torch absent
 
 [tool.setuptools]
 packages = ["sepcmaes"]

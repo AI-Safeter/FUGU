@@ -104,6 +104,37 @@ python examples/evolve_router.py
 # -> final E[reward] under stochastic policy : 98.4%
 ```
 
+## PyTorch backend
+
+In the real TRINITY/FUGU setting the router head reads an LLM's hidden-state
+tensor, usually on GPU, so a torch-native path avoids numpy round-trips and
+keeps the optimizer, the head, and the model on one device.
+`sepcmaes.torch_backend` mirrors the NumPy API, and the update equations are
+identical: the test suite feeds both backends the same population and fitnesses
+and checks the resulting state matches in float64.
+
+```python
+import torch
+from sepcmaes.torch_backend import SepCMAES, TrinityRouterHead
+
+dev = "cuda" if torch.cuda.is_available() else "cpu"
+head = TrinityRouterHead(n_agents=7, feature_dim=1024).to(dev)   # an nn.Module
+opt = SepCMAES(mean=torch.zeros(head.n_params, dtype=torch.float64, device=dev),
+               sigma=1.0, seed=0, device=dev)
+
+xs = opt.ask()                          # (lambda, n_params) on `dev`
+logits = head.batched_logits(xs, H)     # score the whole population in one pass
+opt.tell(xs, fitnesses)
+```
+
+The optimizer defaults to float64 (the ES converges to ~1e-15; float32 only
+reaches ~1e-6); the head defaults to float32 to match LLM activations.
+`batched_logits(theta, H)` evaluates `K` candidate parameter vectors over `S`
+states in one einsum and returns `(K, S, L+3)`, which is how you score a whole
+population across rollouts without a Python loop. See
+`examples/evolve_router_torch.py` (reaches 99.6% on the synthetic task, GPU if
+present).
+
 ## Plugging in real LLM rollouts
 
 The one seam to replace is the fitness function. TRINITY's objective is the
@@ -142,7 +173,7 @@ differs by at most one individual.
 ## Tests
 
 ```bash
-pytest -q          # 42 tests
+pytest -q          # 54 tests (12 torch tests skip if torch is not installed)
 ```
 
 Coverage: interface invariants, determinism, convergence on sphere and the
@@ -153,12 +184,20 @@ conditions, box-constraint handling, construction/`tell` error paths, graceful
 divergence on pathological steps, the router head contract, an end-to-end
 "Sep-CMA-ES evolves the head to match an oracle" test, and a cross-validation
 against the reference `cmaes` library on separable landscapes (skipped if it is
-not installed).
+not installed). The torch backend adds an equivalence test that feeds the numpy
+and torch optimizers the same population and fitnesses and asserts their state
+matches in float64, plus nn.Module, batched-evaluation, and CUDA checks.
 
 The implementation was also put through an adversarial multi-agent review
 (algorithm-vs-Ros&Hansen, numerical robustness, router faithfulness, test
 quality). It found no mathematical or router errors, and the robustness and
-coverage findings it confirmed were fixed test-first.
+coverage findings it confirmed were fixed test-first. The torch backend went
+through the same process, which caught a real tie-breaking divergence (numpy's
+default sort is unstable, torch's is stable, so the two selected different
+candidates on tied fitnesses), a dtype that went stale after `.to()`, a retained
+autograd graph on the gradient-free head, and a batched-input footgun in
+`decide()`. All were fixed test-first, and both backends now force a stable
+sort.
 
 Note on Rosenbrock: it is non-separable with a local optimum for `n ≥ 4`, so a
 diagonal model can stall there in a single run. The test reflects the standard

@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sepcmaes"
+version = "0.1.0"
+description = "Sep-CMA-ES: the separable CMA-ES optimizer behind TRINITY's evolved LLM coordinator head."
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = ["numpy>=1.21"]
+
+[project.optional-dependencies]
+test = ["pytest>=7", "cmaes>=0.10"]   # cmaes is only used for cross-validation
+
+[tool.setuptools]
+packages = ["sepcmaes"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

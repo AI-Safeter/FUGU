@@ -5,14 +5,38 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "sepcmaes"
 version = "0.1.0"
-description = "Sep-CMA-ES: the separable CMA-ES optimizer behind TRINITY's evolved LLM coordinator head."
+description = "Sep-CMA-ES: the separable CMA-ES optimizer behind TRINITY's evolved LLM coordinator head (Sakana FUGU)."
 readme = "README.md"
 requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "Samuel Hong" }]
+keywords = [
+    "cma-es", "sep-cma-es", "evolution-strategy", "black-box-optimization",
+    "derivative-free-optimization", "llm-orchestration", "trinity", "numpy", "pytorch",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Mathematics",
+]
 dependencies = ["numpy>=1.21"]
 
 [project.optional-dependencies]
 torch = ["torch>=2.0"]                # optional PyTorch backend (sepcmaes.torch_backend)
 test = ["pytest>=7", "cmaes>=0.10"]   # cmaes is only used for cross-validation; torch tests skip if torch absent
+
+[project.urls]
+Repository = "https://github.com/AI-Safeter/FUGU"
+"Sakana Fugu" = "https://sakana.ai/fugu/"
+"TRINITY paper" = "https://arxiv.org/abs/2512.04695"
+"Conductor paper" = "https://arxiv.org/abs/2512.04388"
 
 [tool.setuptools]
 packages = ["sepcmaes"]

@@ -24,8 +24,15 @@ from __future__ import annotations
 import math
 from typing import Callable, Optional, Sequence, Tuple, Union
 
-import torch
-import torch.nn as nn
+try:
+    import torch
+    import torch.nn as nn
+except ImportError as exc:  # pragma: no cover - exercised only without torch
+    raise ImportError(
+        "sepcmaes.torch_backend requires PyTorch. Install it with "
+        "`pip install sepcmaes[torch]` or `pip install torch`. The NumPy "
+        "backend (`from sepcmaes import SepCMAES`) needs no extra dependency."
+    ) from exc
 
 from .optimizer import OptimizeResult, Solution
 from .router import (

@@ -1,5 +1,8 @@
 # Sep-CMA-ES: the router optimizer from TRINITY
 
+[![tests](https://github.com/AI-Safeter/FUGU/actions/workflows/ci.yml/badge.svg)](https://github.com/AI-Safeter/FUGU/actions/workflows/ci.yml)
+[![python](https://img.shields.io/badge/python-3.9%2B-blue)](https://www.python.org/)
+[![license: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![arXiv: TRINITY](https://img.shields.io/badge/arXiv-2512.04695-b31b1b)](https://arxiv.org/abs/2512.04695)
 [![arXiv: Conductor](https://img.shields.io/badge/arXiv-2512.04388-b31b1b)](https://arxiv.org/abs/2512.04388)
 [![Sakana Fugu](https://img.shields.io/badge/Sakana-Fugu-7c3aed)](https://sakana.ai/fugu/)
@@ -202,6 +205,21 @@ sort.
 Note on Rosenbrock: it is non-separable with a local optimum for `n ≥ 4`, so a
 diagonal model can stall there in a single run. The test reflects the standard
 remedy, independent restarts, rather than asserting a single run solves it.
+
+## Citing and reuse
+
+MIT licensed, so reuse it freely in research or products. This is an independent
+reimplementation, not the authors' code, so if it supports published work please
+cite the original papers (TRINITY for the router, Ros & Hansen for the
+algorithm) rather than this repository. The NumPy and PyTorch backends are
+interchangeable; pick NumPy for a dependency-light optimizer and the torch
+backend (`pip install sepcmaes[torch]`) when the head plugs into an LLM.
+
+## Contributing
+
+Issues and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for
+setup and the test-first conventions; in short, `pip install -e ".[test]"` then
+`pytest -q`.
 
 ## References
 

@@ -217,9 +217,10 @@ backend (`pip install sepcmaes[torch]`) when the head plugs into an LLM.
 
 ## Contributing
 
-Issues and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for
-setup and the test-first conventions; in short, `pip install -e ".[test]"` then
-`pytest -q`.
+Issues and pull requests are welcome. Set up with `pip install -e ".[test]"` and
+run `pytest -q` (the torch tests skip if torch is absent). It is test-first: add
+a failing test, then make it pass, and keep the NumPy and PyTorch backends
+numerically equivalent if you touch an update equation.
 
 ## References
 

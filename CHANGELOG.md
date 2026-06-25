@@ -12,8 +12,9 @@ All notable changes to this project are documented here. The format follows
   with `batched_logits` for whole-population scoring). Numerically equivalent to
   the NumPy reference, checked in float64 by the test suite.
 - `examples/evolve_router_torch.py`: evolves the head on GPU in one batched pass.
-- Continuous integration (GitHub Actions) across Python 3.9–3.12, plus a job
-  that runs the full suite with the PyTorch backend on CPU wheels.
+- Continuous integration (GitHub Actions): the NumPy core across Python
+  3.9–3.12, plus a self-hosted GPU job that runs the full suite (including the
+  CUDA tests) with PyTorch. The torch backend is validated only on a real GPU.
 - `CONTRIBUTING.md`, packaging metadata (classifiers, keywords, project URLs).
 
 ### Changed

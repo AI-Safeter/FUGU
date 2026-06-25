@@ -8,7 +8,7 @@ on:
 jobs:
   # Core suite across supported Python versions. torch is not installed here,
   # so the torch tests skip (via pytest.importorskip) and the numpy path + the
-  # cmaes cross-validation run.
+  # cmaes cross-validation run. GitHub-hosted runners are CPU-only.
   test:
     runs-on: ubuntu-latest
     strategy:
@@ -24,8 +24,10 @@ jobs:
       - run: pip install -e ".[test]"
       - run: pytest -q
 
-  # Full suite including the PyTorch backend, on CPU wheels.
-  test-torch:
+  # Full suite on the CPU torch wheels. Runs on hosted runners (which have no
+  # GPU), so it covers CPU-only users and untrusted fork PRs. The CUDA-only
+  # tests skip here.
+  test-torch-cpu:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -35,4 +37,19 @@ jobs:
       - run: python -m pip install --upgrade pip
       - run: pip install -e ".[test]"
       - run: pip install torch --index-url https://download.pytorch.org/whl/cpu
+      - run: pytest -q
+
+  # Full suite on a real GPU, including the CUDA tests. Requires a self-hosted
+  # runner with the `gpu` label registered on this repo's GPU machine. Gated to
+  # pushes on this repo so a fork PR can never execute on the self-hosted box.
+  test-torch-gpu:
+    if: github.event_name == 'push' && github.repository == 'AI-Safeter/FUGU'
+    runs-on: [self-hosted, gpu]
+    steps:
+      - uses: actions/checkout@v4
+      # CUDA torch wheels are the default on a GPU box. Fail loudly if the
+      # runner has no visible GPU rather than silently skipping the CUDA tests.
+      - run: python -m pip install --upgrade pip
+      - run: pip install -e ".[test]" torch
+      - run: python -c "import torch; assert torch.cuda.is_available(), 'self-hosted runner has no CUDA GPU'"
       - run: pytest -q
